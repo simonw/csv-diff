@@ -11,10 +11,7 @@ def test_human_cli(tmpdir):
     two.write(TWO)
     result = CliRunner().invoke(cli.cli, [str(one), str(two), "--key", "id"])
     assert 0 == result.exit_code
-    assert (
-        '1 row changed\n\n1 row changed\n\n  Row 1\n    age: "4" => "5"'
-        == result.output.strip()
-    )
+    assert '1 row changed\n\n  Row 1\n    age: "4" => "5"' == result.output.strip()
 
 
 def test_human_cli_json(tmpdir):

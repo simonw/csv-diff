@@ -12,6 +12,11 @@ TWO = """id,name,age
 THREE = """id,name,age
 1,Cleo,5"""
 
+FOUR = """id,name,age
+1,Cleo,5
+2,Pancakes,2,
+3,Bailey,1"""
+
 
 def test_row_changed():
     diff = compare(

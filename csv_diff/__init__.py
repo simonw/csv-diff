@@ -46,12 +46,14 @@ def compare(previous, current):
 def human_text(result):
     title = []
     summary = []
+    show_headers = sum(1 for key in result if result[key]) > 1
     if result["added"]:
         fragment = "{} row{} added".format(
             len(result["added"]), "" if len(result["added"]) == 1 else "s"
         )
         title.append(fragment)
-        summary.append(fragment + "\n")
+        if show_headers:
+            summary.append(fragment + "\n")
         for row in result["added"]:
             summary.append("  {}".format(json.dumps(row)))
         summary.append("")
@@ -60,7 +62,8 @@ def human_text(result):
             len(result["removed"]), "" if len(result["removed"]) == 1 else "s"
         )
         title.append(fragment)
-        summary.append(fragment + "\n")
+        if show_headers:
+            summary.append(fragment + "\n")
         for row in result["removed"]:
             summary.append("  {}".format(json.dumps(row)))
         summary.append("")
@@ -69,7 +72,8 @@ def human_text(result):
             len(result["changed"]), "" if len(result["changed"]) == 1 else "s"
         )
         title.append(fragment)
-        summary.append(fragment + "\n")
+        if show_headers:
+            summary.append(fragment + "\n")
         for details in result["changed"]:
             summary.append("  Row {}".format(details["key"]))
             for field, (prev_value, current_value) in details["changes"].items():
