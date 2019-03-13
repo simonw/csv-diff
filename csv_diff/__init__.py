@@ -23,35 +23,56 @@ def compare(previous, current):
     removed_or_added = set(removed) | set(added)
     potential_changes = [id for id in current if id not in removed_or_added]
     changed = [id for id in potential_changes if current[id] != previous[id]]
-    # Now generate the readable summary
-    summary = []
-    title = []
+    result = {"added": [], "removed": [], "changed": []}
     if added:
-        fragment = "{} row{} added".format(len(added), "" if len(added) == 1 else "s")
-        title.append(fragment)
-        summary.append(fragment + "\n")
-        for id in added:
-            summary.append("  {}".format(json.dumps(current[id])))
-        summary.append("")
+        result["added"] = [current[id] for id in added]
     if removed:
-        fragment = "{} row{} removed".format(
-            len(removed), "" if len(removed) == 1 else "s"
-        )
-        title.append(fragment)
-        summary.append(fragment + "\n")
-        for id in removed:
-            summary.append("  {}".format(json.dumps(previous[id])))
-        summary.append("")
+        result["removed"] = [previous[id] for id in removed]
     if changed:
-        fragment = "{} row{} changed".format(
-            len(changed), "" if len(changed) == 1 else "s"
-        )
-        title.append(fragment)
-        summary.append(fragment + "\n")
         for id in changed:
             d = list(diff(previous[id], current[id]))
-            summary.append("  Row {}".format(id))
-            for _, field, (prev_value, current_value) in d:
+            result["changed"].append(
+                {
+                    "key": id,
+                    "changes": {
+                        field: [prev_value, current_value]
+                        for _, field, (prev_value, current_value) in d
+                    },
+                }
+            )
+    return result
+
+
+def human_text(result):
+    title = []
+    summary = []
+    if result["added"]:
+        fragment = "{} row{} added".format(
+            len(result["added"]), "" if len(result["added"]) == 1 else "s"
+        )
+        title.append(fragment)
+        summary.append(fragment + "\n")
+        for row in result["added"]:
+            summary.append("  {}".format(json.dumps(row)))
+        summary.append("")
+    if result["removed"]:
+        fragment = "{} row{} removed".format(
+            len(result["removed"]), "" if len(result["removed"]) == 1 else "s"
+        )
+        title.append(fragment)
+        summary.append(fragment + "\n")
+        for row in result["removed"]:
+            summary.append("  {}".format(json.dumps(row)))
+        summary.append("")
+    if result["changed"]:
+        fragment = "{} row{} changed".format(
+            len(result["changed"]), "" if len(result["changed"]) == 1 else "s"
+        )
+        title.append(fragment)
+        summary.append(fragment + "\n")
+        for details in result["changed"]:
+            summary.append("  Row {}".format(details["key"]))
+            for field, (prev_value, current_value) in details["changes"].items():
                 summary.append(
                     '    {}: "{}" => "{}"'.format(field, prev_value, current_value)
                 )
