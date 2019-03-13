@@ -47,6 +47,24 @@ def human_text(result):
     title = []
     summary = []
     show_headers = sum(1 for key in result if result[key]) > 1
+    if result["changed"]:
+        fragment = "{} row{} changed".format(
+            len(result["changed"]), "" if len(result["changed"]) == 1 else "s"
+        )
+        title.append(fragment)
+        if show_headers:
+            summary.append(fragment + "\n")
+        change_blocks = []
+        for details in result["changed"]:
+            block = []
+            block.append("  Row {}".format(details["key"]))
+            for field, (prev_value, current_value) in details["changes"].items():
+                block.append(
+                    '    {}: "{}" => "{}"'.format(field, prev_value, current_value)
+                )
+            block.append("")
+            change_blocks.append("\n".join(block))
+        summary.append("\n".join(change_blocks))
     if result["added"]:
         fragment = "{} row{} added".format(
             len(result["added"]), "" if len(result["added"]) == 1 else "s"
@@ -66,20 +84,5 @@ def human_text(result):
             summary.append(fragment + "\n")
         for row in result["removed"]:
             summary.append("  {}".format(json.dumps(row)))
-        summary.append("")
-    if result["changed"]:
-        fragment = "{} row{} changed".format(
-            len(result["changed"]), "" if len(result["changed"]) == 1 else "s"
-        )
-        title.append(fragment)
-        if show_headers:
-            summary.append(fragment + "\n")
-        for details in result["changed"]:
-            summary.append("  Row {}".format(details["key"]))
-            for field, (prev_value, current_value) in details["changes"].items():
-                summary.append(
-                    '    {}: "{}" => "{}"'.format(field, prev_value, current_value)
-                )
-            summary.append("")
         summary.append("")
     return (", ".join(title) + "\n\n" + ("\n".join(summary))).strip()

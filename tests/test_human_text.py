@@ -35,10 +35,10 @@ def test_row_changed_and_row_added():
         load_csv(io.StringIO(ONE), key="id"), load_csv(io.StringIO(FOUR), key="id")
     )
     assert (
-        "1 row added, 1 row changed\n\n"
-        "1 row added\n\n"
-        '  {"id": "3", "name": "Bailey", "age": "1"}\n\n'
+        "1 row changed, 1 row added\n\n"
         "1 row changed\n\n"
         "  Row 1\n"
-        '    age: "4" => "5"'
+        '    age: "4" => "5"\n\n'
+        "1 row added\n\n"
+        '  {"id": "3", "name": "Bailey", "age": "1"}'
     ) == human_text(diff)
