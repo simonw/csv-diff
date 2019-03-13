@@ -1,5 +1,8 @@
 # csv-diff
 
+[![PyPI](https://img.shields.io/pypi/v/csv-diff.svg)](https://pypi.org/project/csv-diff/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/simonw/csv-diff/blob/master/LICENSE)
+
 Tool for viewing the difference between two CSV files.
 
 Consider two CSV files:
