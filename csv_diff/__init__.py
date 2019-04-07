@@ -43,7 +43,7 @@ def compare(previous, current):
     return result
 
 
-def human_text(result):
+def human_text(result, key=None):
     title = []
     summary = []
     show_headers = sum(1 for key in result if result[key]) > 1
@@ -57,7 +57,7 @@ def human_text(result):
         change_blocks = []
         for details in result["changed"]:
             block = []
-            block.append("  Row {}".format(details["key"]))
+            block.append("  {}: {}".format(key, details["key"]))
             for field, (prev_value, current_value) in details["changes"].items():
                 block.append(
                     '    {}: "{}" => "{}"'.format(field, prev_value, current_value)
@@ -72,9 +72,10 @@ def human_text(result):
         title.append(fragment)
         if show_headers:
             summary.append(fragment + "\n")
+        rows = []
         for row in result["added"]:
-            summary.append(human_row(row, prefix="  "))
-            summary.append("")
+            rows.append(human_row(row, prefix="  "))
+        summary.append("\n\n".join(rows))
         summary.append("")
     if result["removed"]:
         fragment = "{} row{} removed".format(
@@ -83,9 +84,10 @@ def human_text(result):
         title.append(fragment)
         if show_headers:
             summary.append(fragment + "\n")
+        rows = []
         for row in result["removed"]:
-            summary.append(human_row(row, prefix="  "))
-            summary.append("")
+            rows.append(human_row(row, prefix="  "))
+        summary.append("\n\n".join(rows))
         summary.append("")
     return (", ".join(title) + "\n\n" + ("\n".join(summary))).strip()
 

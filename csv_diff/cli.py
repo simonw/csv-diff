@@ -25,4 +25,4 @@ def cli(previous, current, key, json):
     if json:
         print(std_json.dumps(diff, indent=4))
     else:
-        print(human_text(diff))
+        print(human_text(diff, key))

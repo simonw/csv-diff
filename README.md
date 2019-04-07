@@ -22,20 +22,24 @@ Consider two CSV files:
 `csv-diff` can show a human-readable summary of differences between the files:
 
     $ csv-diff one.csv two.csv --key=id
-    1 row added, 1 row removed, 1 row changed
-
-    1 row added
-
-      {"id": "3", "name": "Bailey", "age": "1"}
-
-    1 row removed
-
-      {"id": "2", "name": "Pancakes", "age": "2"}
+    1 row changed, 1 row added, 1 row removed
 
     1 row changed
 
       Row 1
         age: "4" => "5"
+
+    1 row added
+
+      id: 3
+      name: Bailey
+      age: 1
+
+    1 row removed
+
+      id: 2
+      name: Pancakes
+      age: 2
 
 The `--key=id` option means that the `id` column should be treated as the unique key, to identify which records have changed.
 

@@ -2,6 +2,7 @@ from click.testing import CliRunner
 from csv_diff import cli
 from .test_csv_diff import ONE, TWO, THREE
 import json
+from textwrap import dedent
 
 
 def test_human_cli(tmpdir):
@@ -11,7 +12,12 @@ def test_human_cli(tmpdir):
     two.write(TWO)
     result = CliRunner().invoke(cli.cli, [str(one), str(two), "--key", "id"])
     assert 0 == result.exit_code
-    assert '1 row changed\n\n  Row 1\n    age: "4" => "5"' == result.output.strip()
+    assert dedent("""
+    1 row changed
+
+      id: 1
+        age: "4" => "5"
+    """).strip() == result.output.strip()
 
 
 def test_human_cli_json(tmpdir):
