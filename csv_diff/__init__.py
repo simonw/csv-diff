@@ -73,7 +73,8 @@ def human_text(result):
         if show_headers:
             summary.append(fragment + "\n")
         for row in result["added"]:
-            summary.append("  {}".format(json.dumps(row)))
+            summary.append(human_row(row, prefix="  "))
+            summary.append("")
         summary.append("")
     if result["removed"]:
         fragment = "{} row{} removed".format(
@@ -83,6 +84,14 @@ def human_text(result):
         if show_headers:
             summary.append(fragment + "\n")
         for row in result["removed"]:
-            summary.append("  {}".format(json.dumps(row)))
+            summary.append(human_row(row, prefix="  "))
+            summary.append("")
         summary.append("")
     return (", ".join(title) + "\n\n" + ("\n".join(summary))).strip()
+
+
+def human_row(row, prefix=""):
+    bits = []
+    for key, value in row.items():
+        bits.append("{}{}: {}".format(prefix, key, value))
+    return "\n".join(bits)
