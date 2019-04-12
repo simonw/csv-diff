@@ -17,6 +17,16 @@ FOUR = """id,name,age
 2,Pancakes,2,
 3,Bailey,1"""
 
+FIVE = """id,name,age
+1,Cleo,5
+2,Pancakes,2,
+3,Bailey,1
+4,Carl,7"""
+
+SIX = """id,name,age
+1,Cleo,5
+3,Bailey,1"""
+
 
 def test_row_changed():
     diff = compare(

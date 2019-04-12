@@ -43,13 +43,15 @@ def compare(previous, current):
     return result
 
 
-def human_text(result, key=None):
+def human_text(result, key=None, singular=None, plural=None):
+    singular = singular or "row"
+    plural = plural or "rows"
     title = []
     summary = []
     show_headers = sum(1 for key in result if result[key]) > 1
     if result["changed"]:
-        fragment = "{} row{} changed".format(
-            len(result["changed"]), "" if len(result["changed"]) == 1 else "s"
+        fragment = "{} {} changed".format(
+            len(result["changed"]), singular if len(result["changed"]) == 1 else plural
         )
         title.append(fragment)
         if show_headers:
@@ -66,8 +68,8 @@ def human_text(result, key=None):
             change_blocks.append("\n".join(block))
         summary.append("\n".join(change_blocks))
     if result["added"]:
-        fragment = "{} row{} added".format(
-            len(result["added"]), "" if len(result["added"]) == 1 else "s"
+        fragment = "{} {} added".format(
+            len(result["added"]), singular if len(result["added"]) == 1 else plural
         )
         title.append(fragment)
         if show_headers:
@@ -78,8 +80,8 @@ def human_text(result, key=None):
         summary.append("\n\n".join(rows))
         summary.append("")
     if result["removed"]:
-        fragment = "{} row{} removed".format(
-            len(result["removed"]), "" if len(result["removed"]) == 1 else "s"
+        fragment = "{} {} removed".format(
+            len(result["removed"]), singular if len(result["removed"]) == 1 else plural
         )
         title.append(fragment)
         if show_headers:
