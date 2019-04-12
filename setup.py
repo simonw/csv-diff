@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import io
 import os
 
-VERSION = "0.3.1"
+VERSION = "0.4"
 
 
 def get_long_description():
@@ -32,7 +32,7 @@ setup(
     tests_require=["csv-diff[test]"],
     url="https://github.com/simonw/csv-diff",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Intended Audience :: End Users/Desktop",
