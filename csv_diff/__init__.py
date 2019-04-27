@@ -75,8 +75,8 @@ def human_text(result, key=None, singular=None, plural=None):
         )
         title.append(fragment)
         summary.extend(
-            [fragment]
-            + ["    {}".format(c) for c in sorted(result["columns_added"])]
+            [fragment, ""]
+            + ["  {}".format(c) for c in sorted(result["columns_added"])]
             + [""]
         )
     if result["columns_removed"]:
@@ -86,8 +86,8 @@ def human_text(result, key=None, singular=None, plural=None):
         )
         title.append(fragment)
         summary.extend(
-            [fragment]
-            + ["    {}".format(c) for c in sorted(result["columns_removed"])]
+            [fragment, ""]
+            + ["  {}".format(c) for c in sorted(result["columns_removed"])]
             + [""]
         )
     if result["changed"]:
