@@ -27,6 +27,14 @@ SIX = """id,name,age
 1,Cleo,5
 3,Bailey,1"""
 
+SEVEN = """id,name,weight
+1,Cleo,48
+3,Bailey,20"""
+
+EIGHT = """id,name,age,length
+3,Bailee,1,100
+4,Bob,7,422"""
+
 
 def test_row_changed():
     diff = compare(
@@ -36,6 +44,8 @@ def test_row_changed():
         "added": [],
         "removed": [],
         "changed": [{"key": "1", "changes": {"age": ["4", "5"]}}],
+        "columns_added": [],
+        "columns_removed": [],
     } == diff
 
 
@@ -47,6 +57,8 @@ def test_row_added():
         "changed": [],
         "removed": [],
         "added": [{"age": "2", "id": "2", "name": "Pancakes"}],
+        "columns_added": [],
+        "columns_removed": [],
     } == diff
 
 
@@ -58,4 +70,19 @@ def test_row_removed():
         "changed": [],
         "removed": [{"age": "2", "id": "2", "name": "Pancakes"}],
         "added": [],
+        "columns_added": [],
+        "columns_removed": [],
+    } == diff
+
+
+def test_columns_changed():
+    diff = compare(
+        load_csv(io.StringIO(SIX), key="id"), load_csv(io.StringIO(SEVEN), key="id")
+    )
+    assert {
+        "changed": [],
+        "removed": [],
+        "added": [],
+        "columns_added": ["weight"],
+        "columns_removed": ["age"],
     } == diff

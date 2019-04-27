@@ -1,5 +1,5 @@
 from csv_diff import load_csv, compare, human_text
-from .test_csv_diff import ONE, TWO, THREE, FOUR, FIVE, SIX
+from .test_csv_diff import ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT
 from textwrap import dedent
 import io
 
@@ -109,6 +109,65 @@ def test_row_changed_and_row_added_and_row_deleted():
       id: 2
       name: Pancakes
       age: 2
+    """
+        ).strip()
+        == human_text(diff, "id")
+    )
+
+
+def test_columns_changed():
+    diff = compare(
+        load_csv(io.StringIO(SIX), key="id"), load_csv(io.StringIO(SEVEN), key="id")
+    )
+    assert (
+        dedent(
+            """
+    1 column added, 1 column removed
+
+    1 column added
+        weight
+
+    1 column removed
+        age
+    """
+        ).strip()
+        == human_text(diff, "id")
+    )
+
+
+def test_columns_and_rows_changed():
+    diff = compare(
+        load_csv(io.StringIO(SEVEN), key="id"), load_csv(io.StringIO(EIGHT), key="id")
+    )
+    assert (
+        dedent(
+            """
+    2 columns added, 1 column removed, 1 row changed, 1 row added, 1 row removed
+
+    2 columns added
+        age
+        length
+
+    1 column removed
+        weight
+
+    1 row changed
+
+      id: 3
+        name: "Bailey" => "Bailee"
+
+    1 row added
+
+      id: 4
+      name: Bob
+      age: 7
+      length: 422
+
+    1 row removed
+
+      id: 1
+      name: Cleo
+      weight: 48
     """
         ).strip()
         == human_text(diff, "id")

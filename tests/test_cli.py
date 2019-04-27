@@ -71,4 +71,6 @@ def test_human_cli_json(tmpdir):
         "added": [],
         "removed": [],
         "changed": [{"key": "1", "changes": {"age": ["4", "5"]}}],
+        "columns_added": [],
+        "columns_removed": [],
     } == json.loads(result.output.strip())

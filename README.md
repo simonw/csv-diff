@@ -71,7 +71,9 @@ You can also run it using the `--json` option to get a machine-readable differen
                     ]
                 }
             }
-        ]
+        ],
+        "columns_added": [],
+        "columns_removed": []
     }
 
 You can also import the Python library into your own code like so:
@@ -83,3 +85,5 @@ You can also import the Python library into your own code like so:
     )
 
 `diff` will now contain the same data structure as the output in the `--json` example above.
+
+If the columns in the CSV have changed, those added or removed olumns will be ignored when calculating changes made to specific rows.
