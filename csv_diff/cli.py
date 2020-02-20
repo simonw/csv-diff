@@ -33,7 +33,7 @@ from . import load_csv, compare, human_text
 )
 def cli(previous, current, key, json, singular, plural):
     "Diff two CSV files"
-    diff = compare(load_csv(open(previous), key=key), load_csv(open(current), key=key))
+    diff = compare(load_csv(open(previous, newline=""), key=key), load_csv(open(current, newline=""), key=key))
     if json:
         print(std_json.dumps(diff, indent=4))
     else:
