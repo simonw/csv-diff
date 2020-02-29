@@ -1,6 +1,7 @@
 # csv-diff
 
 [![PyPI](https://img.shields.io/pypi/v/csv-diff.svg)](https://pypi.org/project/csv-diff/)
+[![CircleCI](https://circleci.com/gh/simonw/csv-diff.svg?style=svg)](https://circleci.com/gh/simonw/csv-diff)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/simonw/csv-diff/blob/master/LICENSE)
 
 Tool for viewing the difference between two CSV files. See [Generating a commit log for San Francisco’s official list of trees](https://simonwillison.net/2019/Mar/13/tree-history/) (and the [sf-tree-history repo commit log](https://github.com/simonw/sf-tree-history/commits)) for background information on this project.
