@@ -5,6 +5,12 @@
 
 Tool for viewing the difference between two CSV files. See [Generating a commit log for San Francisco’s official list of trees](https://simonwillison.net/2019/Mar/13/tree-history/) (and the [sf-tree-history repo commit log](https://github.com/simonw/sf-tree-history/commits)) for background information on this project.
 
+## Installation
+
+    pip install csv-diff
+
+## Usage
+
 Consider two CSV files:
 
 `one.csv`
@@ -43,7 +49,9 @@ Consider two CSV files:
 
 The `--key=id` option means that the `id` column should be treated as the unique key, to identify which records have changed.
 
-You can also run it using the `--json` option to get a machine-readable difference:
+The tool will automatically detect if your files are comma- or tab-separated. You can over-ride this automatic detection and force the tool to use a specific format using `--format=tsv` or `--format=csv`.
+
+You can use the `--json` option to get a machine-readable difference:
 
     $ csv-diff one.csv two.csv --key=id --json
     {
@@ -75,6 +83,8 @@ You can also run it using the `--json` option to get a machine-readable differen
         "columns_added": [],
         "columns_removed": []
     }
+
+## As a Python library
 
 You can also import the Python library into your own code like so:
 
