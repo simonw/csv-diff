@@ -1,8 +1,18 @@
 from click.testing import CliRunner
 from csv_diff import cli
-from .test_csv_diff import ONE, TWO, THREE, FIVE
+import pytest
+from .test_csv_diff import ONE, ONE_TSV, TWO, TWO_TSV, THREE, FIVE
 import json
 from textwrap import dedent
+
+
+@pytest.fixture
+def tsv_files(tmpdir):
+    one = tmpdir / "one.tsv"
+    one.write(ONE_TSV)
+    two = tmpdir / "two.tsv"
+    two.write(TWO_TSV)
+    return str(one), str(two)
 
 
 def test_human_cli(tmpdir):
@@ -74,3 +84,39 @@ def test_human_cli_json(tmpdir):
         "columns_added": [],
         "columns_removed": [],
     } == json.loads(result.output.strip())
+
+
+def test_tsv_files(tsv_files):
+    one, two = tsv_files
+    result = CliRunner().invoke(
+        cli.cli, [one, two, "--key", "id", "--json", "--format", "tsv"]
+    )
+    assert 0 == result.exit_code
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [{"key": "1", "changes": {"age": ["4", "5"]}}],
+        "columns_added": [],
+        "columns_removed": [],
+    } == json.loads(result.output.strip())
+
+
+def test_sniff_format(tsv_files):
+    one, two = tsv_files
+    result = CliRunner().invoke(cli.cli, [one, two, "--key", "id", "--json"])
+    assert 0 == result.exit_code
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [{"key": "1", "changes": {"age": ["4", "5"]}}],
+        "columns_added": [],
+        "columns_removed": [],
+    } == json.loads(result.output.strip())
+
+
+def test_format_overrides_sniff(tsv_files):
+    one, two = tsv_files
+    result = CliRunner().invoke(
+        cli.cli, [one, two, "--key", "id", "--json", "--format", "csv"]
+    )
+    assert 1 == result.exit_code

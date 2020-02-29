@@ -5,6 +5,10 @@ ONE = """id,name,age
 1,Cleo,4
 2,Pancakes,2"""
 
+ONE_TSV = """id\tname\tage
+1\tCleo\t4
+2\tPancakes\t2"""
+
 TWO = """id,name,age
 1,Cleo,5
 2,Pancakes,2"""
