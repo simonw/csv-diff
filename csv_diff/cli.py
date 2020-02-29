@@ -17,6 +17,9 @@ from . import load_csv, compare, human_text
     "--key", type=str, default=None, help="Column to use as a unique ID for each row"
 )
 @click.option(
+    "--format", type=click.Choice(["csv", "tsv"]), default=None, help="Explicitly specify input format (csv, tsv) instead of auto-detecting"
+)
+@click.option(
     "--json", type=bool, default=False, help="Output changes as JSON", is_flag=True
 )
 @click.option(
@@ -31,9 +34,15 @@ from . import load_csv, compare, human_text
     default=None,
     help="Plural word to use, e.g. 'trees' for '2 trees'",
 )
-def cli(previous, current, key, json, singular, plural):
+def cli(previous, current, key, format, json, singular, plural):
     "Diff two CSV files"
-    diff = compare(load_csv(open(previous), key=key), load_csv(open(current), key=key))
+    dialect = {
+        "csv": "excel",
+        "tsv": "excel-tab",
+    }
+    def load(filename):
+        return load_csv(open(filename, newline=""), key=key, dialect=dialect.get(format))
+    diff = compare(load(previous), load(current))
     if json:
         print(std_json.dumps(diff, indent=4))
     else:

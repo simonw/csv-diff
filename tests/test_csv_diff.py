@@ -9,6 +9,10 @@ TWO = """id,name,age
 1,Cleo,5
 2,Pancakes,2"""
 
+TWO_TSV = """id\tname\tage
+1\tCleo\t5
+2\tPancakes\t2"""
+
 THREE = """id,name,age
 1,Cleo,5"""
 
@@ -85,4 +89,17 @@ def test_columns_changed():
         "added": [],
         "columns_added": ["weight"],
         "columns_removed": ["age"],
+    } == diff
+
+
+def test_tsv():
+    diff = compare(
+        load_csv(io.StringIO(ONE), key="id"), load_csv(io.StringIO(TWO_TSV), key="id")
+    )
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [{"key": "1", "changes": {"age": ["4", "5"]}}],
+        "columns_added": [],
+        "columns_removed": [],
     } == diff
