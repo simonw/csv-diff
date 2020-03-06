@@ -43,6 +43,14 @@ EIGHT = """id,name,age,length
 3,Bailee,1,100
 4,Bob,7,422"""
 
+NINE = """id,name,age
+1,Cleo,5
+2,Pancakes,4"""
+
+TEN = """id,name,age
+1,Cleo,5
+2,Pancakes,3"""
+
 
 def test_row_changed():
     diff = compare(
