@@ -97,4 +97,4 @@ You can also import the Python library into your own code like so:
 
 `diff` will now contain the same data structure as the output in the `--json` example above.
 
-If the columns in the CSV have changed, those added or removed olumns will be ignored when calculating changes made to specific rows.
+If the columns in the CSV have changed, those added or removed columns will be ignored when calculating changes made to specific rows.
