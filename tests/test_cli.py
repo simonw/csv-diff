@@ -153,3 +153,36 @@ def test_column_containing_dot(tmpdir):
         "columns_added": [],
         "columns_removed": [],
     } == json.loads(result.output.strip())
+
+
+def test_semicolon_delimited(tmpdir):
+    # https://github.com/simonw/csv-diff/issues/6
+    one = tmpdir / "one.csv"
+    two = tmpdir / "two.csv"
+    one.write(
+        dedent(
+            """
+    id;name
+    1;Mark
+    """
+        ).strip()
+    )
+    two.write(
+        dedent(
+            """
+    id;name
+    1;Brian
+    """
+        ).strip()
+    )
+    result = CliRunner().invoke(
+        cli.cli, [str(one), str(two), "--key", "id", "--json"], catch_exceptions=False
+    )
+    assert 0 == result.exit_code
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [{"key": "1", "changes": {"name": ["Mark", "Brian"]}}],
+        "columns_added": [],
+        "columns_removed": [],
+    } == json.loads(result.output.strip())
