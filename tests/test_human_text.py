@@ -21,6 +21,28 @@ def test_row_changed():
     )
 
 
+def test_row_changed_show_unchanged():
+    diff = compare(
+        load_csv(io.StringIO(ONE), key="id"),
+        load_csv(io.StringIO(TWO), key="id"),
+        show_unchanged=True,
+    )
+    assert (
+        dedent(
+            """
+    1 row changed
+
+      id: 1
+        age: "4" => "5"
+
+        Unchanged:
+          name: "Cleo"
+    """
+        ).strip()
+        == human_text(diff, "id")
+    )
+
+
 def test_row_added():
     diff = compare(
         load_csv(io.StringIO(THREE), key="id"), load_csv(io.StringIO(TWO), key="id")

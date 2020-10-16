@@ -24,7 +24,7 @@ def load_csv(fp, key=None, dialect=None):
     return {keyfn(r): r for r in rows}
 
 
-def compare(previous, current):
+def compare(previous, current, show_unchanged=False):
     result = {
         "added": [],
         "removed": [],
@@ -59,19 +59,24 @@ def compare(previous, current):
         for id in changed:
             d = list(diff(previous[id], current[id], ignore=ignore_columns))
             if d:
-                result["changed"].append(
-                    {
-                        "key": id,
-                        "changes": {
-                            field: [prev_value, current_value]
-                            for _, field, (prev_value, current_value) in d
-                        },
+                changes = {
+                    "key": id,
+                    "changes": {
+                        field: [prev_value, current_value]
+                        for _, field, (prev_value, current_value) in d
+                    },
+                }
+                if show_unchanged:
+                    changes["unchanged"] = {
+                        field: value
+                        for field, value in previous[id].items()
+                        if field not in changes["changes"] and field != "id"
                     }
-                )
+                result["changed"].append(changes)
     return result
 
 
-def human_text(result, key=None, singular=None, plural=None):
+def human_text(result, key=None, singular=None, plural=None, show_unchanged=False):
     singular = singular or "row"
     plural = plural or "rows"
     title = []
@@ -116,6 +121,13 @@ def human_text(result, key=None, singular=None, plural=None):
                 )
             block.append("")
             change_blocks.append("\n".join(block))
+            if details.get("unchanged"):
+                block = []
+                block.append("    Unchanged:")
+                for field, value in details["unchanged"].items():
+                    block.append('      {}: "{}"'.format(field, value))
+                block.append("")
+                change_blocks.append("\n".join(block))
         summary.append("\n".join(change_blocks))
     if result["added"]:
         fragment = "{} {} added".format(

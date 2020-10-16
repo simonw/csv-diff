@@ -37,7 +37,12 @@ from . import load_csv, compare, human_text
     default=None,
     help="Plural word to use, e.g. 'trees' for '2 trees'",
 )
-def cli(previous, current, key, format, json, singular, plural):
+@click.option(
+    "--show-unchanged",
+    is_flag=True,
+    help="Show unchanged fields for rows with at least one change",
+)
+def cli(previous, current, key, format, json, singular, plural, show_unchanged):
     "Diff two CSV files"
     dialect = {
         "csv": "excel",
@@ -49,7 +54,7 @@ def cli(previous, current, key, format, json, singular, plural):
             open(filename, newline=""), key=key, dialect=dialect.get(format)
         )
 
-    diff = compare(load(previous), load(current))
+    diff = compare(load(previous), load(current), show_unchanged)
     if json:
         print(std_json.dumps(diff, indent=4))
     else:
