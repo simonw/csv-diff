@@ -57,13 +57,16 @@ def compare(previous, current, show_unchanged=False):
         result["removed"] = [previous[id] for id in removed]
     if changed:
         for id in changed:
-            d = list(diff(previous[id], current[id], ignore=ignore_columns))
-            if d:
+            diffs = list(diff(previous[id], current[id], ignore=ignore_columns))
+            if diffs:
                 changes = {
                     "key": id,
                     "changes": {
-                        field: [prev_value, current_value]
-                        for _, field, (prev_value, current_value) in d
+                        # field can be a list if id contained '.' - #7
+                        field[0]
+                        if isinstance(field, list)
+                        else field: [prev_value, current_value]
+                        for _, field, (prev_value, current_value) in diffs
                     },
                 }
                 if show_unchanged:

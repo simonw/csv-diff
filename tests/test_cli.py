@@ -120,3 +120,36 @@ def test_format_overrides_sniff(tsv_files):
         cli.cli, [one, two, "--key", "id", "--json", "--format", "csv"]
     )
     assert 1 == result.exit_code
+
+
+def test_column_containing_dot(tmpdir):
+    # https://github.com/simonw/csv-diff/issues/7
+    one = tmpdir / "one.csv"
+    two = tmpdir / "two.csv"
+    one.write(
+        dedent(
+            """
+    id,foo.bar,foo.baz
+    1,Dog,Cat
+    """
+        ).strip()
+    )
+    two.write(
+        dedent(
+            """
+    id,foo.bar,foo.baz
+    1,Dog,Beaver
+    """
+        ).strip()
+    )
+    result = CliRunner().invoke(
+        cli.cli, [str(one), str(two), "--key", "id", "--json"], catch_exceptions=False
+    )
+    assert 0 == result.exit_code
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [{"key": "1", "changes": {"foo.baz": ["Cat", "Beaver"]}}],
+        "columns_added": [],
+        "columns_removed": [],
+    } == json.loads(result.output.strip())
