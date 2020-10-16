@@ -20,7 +20,9 @@ def load_csv(fp, key=None, dialect=None):
     if key:
         keyfn = lambda r: r[key]
     else:
-        keyfn = lambda r: hashlib.sha1(json.dumps(r, sort_keys=True).encode("utf8"))
+        keyfn = lambda r: hashlib.sha1(
+            json.dumps(r, sort_keys=True).encode("utf8")
+        ).hexdigest()
     return {keyfn(r): r for r in rows}
 
 
