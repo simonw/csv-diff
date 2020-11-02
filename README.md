@@ -53,7 +53,7 @@ The `--key=id` option means that the `id` column should be treated as the unique
 
 The tool will automatically detect if your files are comma- or tab-separated. You can over-ride this automatic detection and force the tool to use a specific format using `--format=tsv` or `--format=csv`.
 
-Use `--show-unchanged` to include full details of the unchanged rows in the diff output:
+Use `--show-unchanged` to include full details of the unchanged values for rows with at least one change in the diff output:
 
     % csv-diff one.csv two.csv --key=id --show-unchanged
     1 row changed
