@@ -110,3 +110,17 @@ You can also import the Python library into your own code like so:
 `diff` will now contain the same data structure as the output in the `--json` example above.
 
 If the columns in the CSV have changed, those added or removed columns will be ignored when calculating changes made to specific rows.
+
+## As a Docker container
+
+### Build the image
+
+    $ docker build -t csvdiff .
+
+### Run the container
+
+    $ docker run --rm -v $(pwd):/files csvdiff
+
+Suppose current directory contains two csv files : one.csv two.csv
+
+    $ docker run --rm -v $(pwd):/files csvdiff one.csv two.csv
