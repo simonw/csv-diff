@@ -1,6 +1,6 @@
 import click
 import json as std_json
-from . import load_csv, compare, human_text
+from . import load_csv, load_json, compare, human_text
 
 
 @click.command()
@@ -18,9 +18,9 @@ from . import load_csv, compare, human_text
 )
 @click.option(
     "--format",
-    type=click.Choice(["csv", "tsv"]),
+    type=click.Choice(["csv", "tsv", "json"]),
     default=None,
-    help="Explicitly specify input format (csv, tsv) instead of auto-detecting",
+    help="Explicitly specify input format (csv, tsv, json) instead of auto-detecting",
 )
 @click.option(
     "--json", type=bool, default=False, help="Output changes as JSON", is_flag=True
@@ -43,16 +43,19 @@ from . import load_csv, compare, human_text
     help="Show unchanged fields for rows with at least one change",
 )
 def cli(previous, current, key, format, json, singular, plural, show_unchanged):
-    "Diff two CSV files"
+    "Diff two CSV or JSON files"
     dialect = {
         "csv": "excel",
         "tsv": "excel-tab",
     }
 
     def load(filename):
-        return load_csv(
-            open(filename, newline=""), key=key, dialect=dialect.get(format)
-        )
+        if format == "json":
+            return load_json(open(filename), key=key)
+        else:
+            return load_csv(
+                open(filename, newline=""), key=key, dialect=dialect.get(format)
+            )
 
     diff = compare(load(previous), load(current), show_unchanged)
     if json:

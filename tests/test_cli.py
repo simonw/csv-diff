@@ -1,7 +1,9 @@
 from click.testing import CliRunner
-from csv_diff import cli
+from csv_diff import cli, load_csv
+import csv
 import pytest
 from .test_csv_diff import ONE, ONE_TSV, TWO, TWO_TSV, THREE, FIVE
+import io
 import json
 from textwrap import dedent
 
@@ -12,6 +14,29 @@ def tsv_files(tmpdir):
     one.write(ONE_TSV)
     two = tmpdir / "two.tsv"
     two.write(TWO_TSV)
+    return str(one), str(two)
+
+
+@pytest.fixture
+def json_files(tmpdir):
+    one = tmpdir / "one.json"
+    one.write(
+        json.dumps(
+            [
+                {"id": 1, "name": "Cleo", "nested": {"foo": 3}},
+                {"id": 2, "name": "Pancakes", "nested": {"foo": 3}},
+            ]
+        )
+    )
+    two = tmpdir / "two.json"
+    two.write(
+        json.dumps(
+            [
+                {"id": 1, "name": "Cleo", "nested": {"foo": 3, "bar": 5}},
+                {"id": 2, "name": "Pancakes!", "nested": {"foo": 3}},
+            ]
+        )
+    )
     return str(one), str(two)
 
 
@@ -96,6 +121,26 @@ def test_tsv_files(tsv_files):
         "added": [],
         "removed": [],
         "changed": [{"key": "1", "changes": {"age": ["4", "5"]}}],
+        "columns_added": [],
+        "columns_removed": [],
+    } == json.loads(result.output.strip())
+
+
+def test_json_files(json_files):
+    one, two = json_files
+    result = CliRunner().invoke(
+        cli.cli,
+        [one, two, "--key", "id", "--json", "--format", "json"],
+        catch_exceptions=False,
+    )
+    assert 0 == result.exit_code
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [
+            {"key": 1, "changes": {"nested": ['{"foo": 3}', '{"foo": 3, "bar": 5}']}},
+            {"key": 2, "changes": {"name": ["Pancakes", "Pancakes!"]}},
+        ],
         "columns_added": [],
         "columns_removed": [],
     } == json.loads(result.output.strip())

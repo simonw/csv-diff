@@ -15,7 +15,7 @@ def get_long_description():
 
 setup(
     name="csv-diff",
-    description="Python CLI tool and library for diffing CSV files",
+    description="Python CLI tool and library for diffing CSV and JSON files",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
     author="Simon Willison",
