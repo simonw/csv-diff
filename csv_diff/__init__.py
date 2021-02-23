@@ -29,20 +29,26 @@ def load_csv(fp, key=None, dialect=None):
 def load_json(fp, key=None):
     raw_list = json.load(fp)
     assert isinstance(raw_list, list)
+    common_keys = set()
+    for item in raw_list:
+        common_keys.update(item.keys())
     if key:
         keyfn = lambda r: r[key]
     else:
         keyfn = lambda r: hashlib.sha1(
             json.dumps(r, sort_keys=True).encode("utf8")
         ).hexdigest()
-    return {keyfn(r): _simplify_json_row(r) for r in raw_list}
+    return {keyfn(r): _simplify_json_row(r, common_keys) for r in raw_list}
 
 
-def _simplify_json_row(r):
+def _simplify_json_row(r, common_keys):
     # Convert list/dict values into JSON serialized strings
     for key, value in r.items():
         if isinstance(value, (dict, tuple, list)):
             r[key] = json.dumps(value)
+    for key in common_keys:
+        if key not in r:
+            r[key] = None
     return r
 
 

@@ -23,7 +23,7 @@ def json_files(tmpdir):
     one.write(
         json.dumps(
             [
-                {"id": 1, "name": "Cleo", "nested": {"foo": 3}},
+                {"id": 1, "name": "Cleo", "nested": {"foo": 3}, "extra": 1},
                 {"id": 2, "name": "Pancakes", "nested": {"foo": 3}},
             ]
         )
@@ -32,8 +32,8 @@ def json_files(tmpdir):
     two.write(
         json.dumps(
             [
-                {"id": 1, "name": "Cleo", "nested": {"foo": 3, "bar": 5}},
-                {"id": 2, "name": "Pancakes!", "nested": {"foo": 3}},
+                {"id": 1, "name": "Cleo", "nested": {"foo": 3, "bar": 5}, "extra": 1},
+                {"id": 2, "name": "Pancakes!", "nested": {"foo": 3}, "extra": 1},
             ]
         )
     )
@@ -139,7 +139,10 @@ def test_json_files(json_files):
         "removed": [],
         "changed": [
             {"key": 1, "changes": {"nested": ['{"foo": 3}', '{"foo": 3, "bar": 5}']}},
-            {"key": 2, "changes": {"name": ["Pancakes", "Pancakes!"]}},
+            {
+                "key": 2,
+                "changes": {"name": ["Pancakes", "Pancakes!"], "extra": [None, 1]},
+            },
         ],
         "columns_added": [],
         "columns_removed": [],
