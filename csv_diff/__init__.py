@@ -2,6 +2,7 @@ import csv
 from dictdiffer import diff
 import json
 import hashlib
+from operator import itemgetter
 
 
 def load_csv(fp, key=None, dialect=None):
@@ -18,7 +19,7 @@ def load_csv(fp, key=None, dialect=None):
     headings = next(fp)
     rows = [dict(zip(headings, line)) for line in fp]
     if key:
-        keyfn = lambda r: r[key]
+        keyfn = itemgetter(*key.split(","))
     else:
         keyfn = lambda r: hashlib.sha1(
             json.dumps(r, sort_keys=True).encode("utf8")
@@ -33,7 +34,7 @@ def load_json(fp, key=None):
     for item in raw_list:
         common_keys.update(item.keys())
     if key:
-        keyfn = lambda r: r[key]
+        keyfn = itemgetter(*key.split(","))
     else:
         keyfn = lambda r: hashlib.sha1(
             json.dumps(r, sort_keys=True).encode("utf8")

@@ -14,7 +14,10 @@ from . import load_csv, load_json, compare, human_text
     type=click.Path(exists=True, file_okay=True, dir_okay=False, allow_dash=False),
 )
 @click.option(
-    "--key", type=str, default=None, help="Column to use as a unique ID for each row"
+    "--key",
+    type=str,
+    default=None,
+    help="Column(s) to use as a unique ID for each row. To use multiple keys, separate them with a comma, e.g., key1,key2",
 )
 @click.option(
     "--format",
