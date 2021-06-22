@@ -18,7 +18,7 @@ def load_csv(fp, key=None, dialect=None, ignore=None):
     fp = csv.reader(fp, dialect=(dialect or "excel"))
     headings = next(fp)
     ignore = set(ignore.split(',')) if ignore else set()
-    rows = [dict( (k, v) for k,v in dict(zip(headings, line)).items() if k not in ignore) for line in fp]
+    rows = [dict( (k, v) for k,v in zip(headings, line) if k not in ignore) for line in fp]
     if key:
         keyfn = itemgetter(*key.split(','))
     else:
@@ -32,9 +32,9 @@ def load_json(fp, key=None, ignore=None):
     raw_list = json.load(fp)
     assert isinstance(raw_list, list)
     if ignore:
-      for r in raw_list:
-        for k in ignore.split(','):
-            r.pop(k, None)
+      for item in raw_list:
+        for field in ignore.split(','):
+            item.pop(field, None)
     common_keys = set()
     for item in raw_list:
         common_keys.update(item.keys())
