@@ -51,6 +51,29 @@ TEN = """id,name,age
 1,Cleo,5
 2,Pancakes,3"""
 
+ELEVEN = """state,county,pop
+CA,Yikes,100
+NY,Beep,200
+CA,Zoinks,100
+NY,Zoinks,200
+"""
+
+TWELVE = """state,county,pop
+CA,Yikes,100
+NY,Beep,200
+CA,Zoinks,300
+NY,Zoinks,200
+"""
+
+THIRTEEN = """id,name,age,sex
+1,Cleo,5,male
+2,Pancakes,4,female
+"""
+
+FOURTEEN = """id,name,age,sex
+1,Cleo,5,female
+2,Pancakes,3,female
+"""
 
 def test_row_changed():
     diff = compare(
@@ -112,6 +135,33 @@ def test_tsv():
         "added": [],
         "removed": [],
         "changed": [{"key": "1", "changes": {"age": ["4", "5"]}}],
+        "columns_added": [],
+        "columns_removed": [],
+    } == diff
+
+def test_multikey():
+    diff = compare(
+        load_csv(io.StringIO(ELEVEN), key="state,county"),
+        load_csv(io.StringIO(TWELVE), key="state,county"),
+    )
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [{"key": ("CA", "Zoinks"), "changes": {"pop": ["100", "300"]}}],
+        "columns_added": [],
+        "columns_removed": [],
+    } == diff
+
+
+def test_ignore_columns():
+    diff = compare(
+        load_csv(io.StringIO(THIRTEEN), key="id", ignore="sex"),
+        load_csv(io.StringIO(FOURTEEN), key="id", ignore="sex"),
+    )
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [{"key": "2", "changes": {"age": ["4", "3"]}}],
         "columns_added": [],
         "columns_removed": [],
     } == diff
