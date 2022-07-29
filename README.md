@@ -126,3 +126,7 @@ If the columns in the CSV have changed, those added or removed columns will be i
 Suppose current directory contains two csv files : one.csv two.csv
 
     $ docker run --rm -v $(pwd):/files csvdiff one.csv two.csv
+    
+## Alternatives
+
+- [csvdiff](https://github.com/aswinkarthik/csvdiff) is a "fast diff tool for comparing CSV files" - you may get better results from this than from `csv-diff` against larger files.
