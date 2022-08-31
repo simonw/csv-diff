@@ -40,6 +40,32 @@ def json_files(tmpdir):
     return str(one), str(two)
 
 
+@pytest.fixture
+def json_files_two(tmpdir):
+    one = tmpdir / "one.json"
+    one.write(
+        json.dumps(
+            [
+                {"state": "CA", "county": "Yikes", "pop": 100, "extra": 1},
+                {"state": "NY", "county": "Beep", "pop": 200, "extra": 2 },
+                {"state": "CA", "county": "Zoinks", "pop": 100 },
+                {"state": "NY", "county": "Zoinks", "pop": 200 }
+            ]
+        )
+    )
+    two = tmpdir / "two.json"
+    two.write(
+        json.dumps(
+            [
+                {"state": "CA", "county": "Yikes", "pop": 100},
+                {"state": "NY", "county": "Beep", "pop": 200, "extra": 2 },
+                {"state": "CA", "county": "Zoinks", "pop": 300 },
+                {"state": "NY", "county": "Zoinks", "pop": 200 }
+            ]
+        )
+    )
+    return str(one), str(two)
+
 def test_human_cli(tmpdir):
     one = tmpdir / "one.csv"
     one.write(ONE)
@@ -231,6 +257,48 @@ def test_semicolon_delimited(tmpdir):
         "added": [],
         "removed": [],
         "changed": [{"key": "1", "changes": {"name": ["Mark", "Brian"]}}],
+        "columns_added": [],
+        "columns_removed": [],
+    } == json.loads(result.output.strip())
+
+
+def test_multikey(json_files_two):
+    # https://github.com/simonw/csv-diff/issues/7
+    one, two = json_files_two
+    result = CliRunner().invoke(
+        cli.cli,
+        [one, two, "--key", "state,county", "--json", "--format", "json"],
+        catch_exceptions=False,
+    )
+    assert 0 == result.exit_code
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [
+          {"key": ["CA", "Yikes"], "changes": {"extra": [1, None]}},
+          {"key": ["CA", "Zoinks"], "changes": {"pop": [100, 300]}},
+        ],
+        "columns_added": [],
+        "columns_removed": [],
+    } == json.loads(result.output.strip())
+
+
+
+def test_ignore(json_files_two):
+    # https://github.com/simonw/csv-diff/issues/7
+    one, two = json_files_two
+    result = CliRunner().invoke(
+        cli.cli,
+        [one, two, "--key", "state,county", "--ignore", "extra", "--json", "--format", "json"],
+        catch_exceptions=False,
+    )
+    assert 0 == result.exit_code
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [
+          {"key": ["CA", "Zoinks"], "changes": {"pop": [100, 300]}},
+        ],
         "columns_added": [],
         "columns_removed": [],
     } == json.loads(result.output.strip())

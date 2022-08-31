@@ -49,7 +49,10 @@ Consider two CSV files:
       name: Pancakes
       age: 2
 
-The `--key=id` option means that the `id` column should be treated as the unique key, to identify which records have changed.
+The `--key=id` option means that the `id` column should be treated as the unique key, to identify which records have changed. To use a combination of columns as the key, separate them with a comma, e.g., `--key=id1,id2`.
+
+The `--ignore=col` option means that the `col` column will be ignored during the comparison. To ignore multiple columns, separate them with a comma, 
+e.g., `--ignore=col1,col2`.
 
 The tool will automatically detect if your files are comma- or tab-separated. You can over-ride this automatic detection and force the tool to use a specific format using `--format=tsv` or `--format=csv`.
 

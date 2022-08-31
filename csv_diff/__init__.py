@@ -2,9 +2,10 @@ import csv
 from dictdiffer import diff
 import json
 import hashlib
+from operator import itemgetter
 
 
-def load_csv(fp, key=None, dialect=None):
+def load_csv(fp, key=None, dialect=None, ignore=None):
     if dialect is None and fp.seekable():
         # Peek at first 1MB to sniff the delimiter and other dialect details
         peek = fp.read(1024 ** 2)
@@ -16,9 +17,10 @@ def load_csv(fp, key=None, dialect=None):
             pass
     fp = csv.reader(fp, dialect=(dialect or "excel"))
     headings = next(fp)
-    rows = [dict(zip(headings, line)) for line in fp]
+    ignore = set(ignore.split(',')) if ignore else set()
+    rows = [dict( (k, v) for k,v in zip(headings, line) if k not in ignore) for line in fp]
     if key:
-        keyfn = lambda r: r[key]
+        keyfn = itemgetter(*key.split(','))
     else:
         keyfn = lambda r: hashlib.sha1(
             json.dumps(r, sort_keys=True).encode("utf8")
@@ -26,14 +28,18 @@ def load_csv(fp, key=None, dialect=None):
     return {keyfn(r): r for r in rows}
 
 
-def load_json(fp, key=None):
+def load_json(fp, key=None, ignore=None):
     raw_list = json.load(fp)
     assert isinstance(raw_list, list)
+    if ignore:
+      for item in raw_list:
+        for field in ignore.split(','):
+            item.pop(field, None)
     common_keys = set()
     for item in raw_list:
         common_keys.update(item.keys())
     if key:
-        keyfn = lambda r: r[key]
+        keyfn = itemgetter(*key.split(','))
     else:
         keyfn = lambda r: hashlib.sha1(
             json.dumps(r, sort_keys=True).encode("utf8")
