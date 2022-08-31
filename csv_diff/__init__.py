@@ -106,6 +106,42 @@ def compare(previous, current, show_unchanged=False):
                 result["changed"].append(changes)
     return result
 
+def compareShowAllCols(previous, current, show_unchanged=False):
+    result = {
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "columns_added": [],
+        "columns_removed": [],
+    }
+    # Have the columns changed?
+    previous_columns = set(next(iter(previous.values())).keys())
+    current_columns = set(next(iter(current.values())).keys())
+    ignore_columns = None
+    if previous_columns != current_columns:
+        result["columns_added"] = [
+            c for c in current_columns if c not in previous_columns
+        ]
+        result["columns_removed"] = [
+            c for c in previous_columns if c not in current_columns
+        ]
+        ignore_columns = current_columns.symmetric_difference(previous_columns)
+    # Have any rows been removed or added?
+    removed = [id for id in previous if id not in current]
+    added = [id for id in current if id not in previous]
+    # How about changed?
+    removed_or_added = set(removed) | set(added)
+    potential_changes = [id for id in current if id not in removed_or_added]
+    changed = [id for id in potential_changes if current[id] != previous[id]]
+    if added:
+        result["added"] = [current[id] for id in added]
+    if removed:
+        result["removed"] = [previous[id] for id in removed]
+    if changed:
+        result["changed"] = [current[id] for id in changed]
+    
+    return result
+
 
 def human_text(result, key=None, singular=None, plural=None, show_unchanged=False):
     singular = singular or "row"
