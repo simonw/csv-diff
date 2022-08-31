@@ -234,3 +234,43 @@ def test_semicolon_delimited(tmpdir):
         "columns_added": [],
         "columns_removed": [],
     } == json.loads(result.output.strip())
+
+
+def test_human_cli_non_utf8_encoding(tmpdir):
+    # This test confirms the ability to parse csv files that are not encoded using utf-8.
+    # The names in the files contain characters that would cause UnicodeDecodeErrors if they
+    # are encoeded using cp1252 and then parsed using utf-8.
+    encoding = "cp1252"
+    one = tmpdir / "one.csv"
+    two = tmpdir / "two.csv"
+    one.write_binary(
+        dedent(
+            """
+    id;name
+    1;José
+    """
+        ).strip().encode(encoding)
+    )
+    two.write_binary(
+        dedent(
+            """
+    id;name
+    1;Ángela
+    """
+        ).strip().encode(encoding)
+    )
+    result = CliRunner().invoke(
+        cli.cli, [str(one), str(two), "--key", "id", "--encoding", encoding], catch_exceptions=False
+    )
+    assert 0 == result.exit_code
+    assert (
+        dedent(
+            """
+    1 row changed
+
+      id: 1
+        name: "José" => "Ángela"
+    """
+        ).strip()
+        == result.output.strip()
+    )

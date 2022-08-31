@@ -42,7 +42,12 @@ from . import load_csv, load_json, compare, human_text
     is_flag=True,
     help="Show unchanged fields for rows with at least one change",
 )
-def cli(previous, current, key, format, json, singular, plural, show_unchanged):
+@click.option(
+    "--encoding",
+    default=None,
+    help="Specify text encoding of the csv files",
+)
+def cli(previous, current, key, format, json, singular, plural, show_unchanged, encoding):
     "Diff two CSV or JSON files"
     dialect = {
         "csv": "excel",
@@ -51,10 +56,10 @@ def cli(previous, current, key, format, json, singular, plural, show_unchanged):
 
     def load(filename):
         if format == "json":
-            return load_json(open(filename), key=key)
+            return load_json(open(filename, encoding=encoding), key=key)
         else:
             return load_csv(
-                open(filename, newline=""), key=key, dialect=dialect.get(format)
+                open(filename, newline="", encoding=encoding), key=key, dialect=dialect.get(format)
             )
 
     diff = compare(load(previous), load(current), show_unchanged)
