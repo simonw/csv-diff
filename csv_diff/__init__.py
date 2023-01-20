@@ -28,9 +28,10 @@ def load_csv(fp, key=None, dialect=None):
 
 def load_json(fp, key=None):
     raw_list = json.load(fp)
-    assert isinstance(raw_list, list)
+    assert isinstance(raw_list, list), "JSON must be a list of dicts."
     common_keys = set()
     for item in raw_list:
+        assert isinstance(item, dict), "JSON must be a list of dicts."
         common_keys.update(item.keys())
     if key:
         keyfn = lambda r: r[key]
