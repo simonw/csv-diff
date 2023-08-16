@@ -17,8 +17,11 @@ def load_csv(fp, key=None, dialect=None):
     fp = csv.reader(fp, dialect=(dialect or "excel"))
     headings = next(fp)
     rows = [dict(zip(headings, line)) for line in fp]
+
+    if isinstance(key, str):
+        key = (key,)
     if key:
-        keyfn = lambda r: r[key]
+        keyfn = lambda r: tuple(r[k] for k in key)
     else:
         keyfn = lambda r: hashlib.sha1(
             json.dumps(r, sort_keys=True).encode("utf8")
@@ -32,8 +35,10 @@ def load_json(fp, key=None):
     common_keys = set()
     for item in raw_list:
         common_keys.update(item.keys())
+        # maybe add later not sure if matters
+        # common_keys = {tuple(k) for k in common_keys}
     if key:
-        keyfn = lambda r: r[key]
+        keyfn = lambda r: tuple(r[k] for k in key)
     else:
         keyfn = lambda r: hashlib.sha1(
             json.dumps(r, sort_keys=True).encode("utf8")
@@ -88,7 +93,9 @@ def compare(previous, current, show_unchanged=False):
             diffs = list(diff(previous[id], current[id], ignore=ignore_columns))
             if diffs:
                 changes = {
-                    "key": id,
+                    # Casting the id to a str here to keep consistent with json reading format.
+                    # This is clunky and requires checking for a str later before recasting the key to a tuple.
+                    "key": id[0] if len(id) == 1 else id,
                     "changes": {
                         # field can be a list if id contained '.' - #7
                         field[0]
@@ -145,7 +152,12 @@ def human_text(result, key=None, singular=None, plural=None, show_unchanged=Fals
         change_blocks = []
         for details in result["changed"]:
             block = []
-            block.append("  {}: {}".format(key, details["key"]))
+            
+            if isinstance(key, str):
+                key = (key,)
+            for k, v in zip(key, details["key"]): # For each k in key append to the block.
+                block.append("  {}: {}".format(k, v))
+
             for field, (prev_value, current_value) in details["changes"].items():
                 block.append(
                     '    {}: "{}" => "{}"'.format(field, prev_value, current_value)
