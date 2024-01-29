@@ -9,3 +9,4 @@ venv
 .DS_Store
 .schema
 .vscode
+build/*
