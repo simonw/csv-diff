@@ -4,7 +4,7 @@ import json
 import hashlib
 
 
-def load_csv(fp, key=None, dialect=None):
+def load_csv(fp, key=None, dialect=None, key_sep='-'):
     if dialect is None and fp.seekable():
         # Peek at first 1MB to sniff the delimiter and other dialect details
         peek = fp.read(1024 ** 2)
@@ -18,7 +18,10 @@ def load_csv(fp, key=None, dialect=None):
     headings = next(fp)
     rows = [dict(zip(headings, line)) for line in fp]
     if key:
-        keyfn = lambda r: r[key]
+        if type(key) == list: # if a list of cols provided then build a concatenated key with them - order matters
+            keyfn = lambda r: key_sep.join([r[x] for x in key])
+        else:
+            keyfn = lambda r: r[key]
     else:
         keyfn = lambda r: hashlib.sha1(
             json.dumps(r, sort_keys=True).encode("utf8")
