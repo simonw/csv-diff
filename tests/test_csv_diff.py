@@ -51,6 +51,19 @@ TEN = """id,name,age
 1,Cleo,5
 2,Pancakes,3"""
 
+ELEVEN = """name, state, age
+Ann, UT, 56
+Ann, NY, 24
+Lisa, CA, 35
+Bill, FL, 33
+Bill, WY, 23"""
+
+TWELVE = """name, state, age
+Ann, UT, 45
+Ann, NY, 24
+Lisa, CA, 35
+Bill, WY, 23"""
+
 
 def test_row_changed():
     diff = compare(
@@ -114,4 +127,16 @@ def test_tsv():
         "changed": [{"key": "1", "changes": {"age": ["4", "5"]}}],
         "columns_added": [],
         "columns_removed": [],
+    } == diff
+
+def test_multi_key():
+    diff = compare(
+        load_csv(io.StringIO(ELEVEN), key=["name", "state"], key_sep='~'), load_csv(io.StringIO(TWELVE), key=["name", "state"], key_sep='~'), 
+    )
+    assert {
+        'added': [],
+        'removed': [{'name': 'Bill', 'state': 'FL', 'age': '33'}],
+        'changed': [{'key': 'Ann~UT', 'changes': {'age': ['56', '45']}}],
+        'columns_added': [],
+        'columns_removed': [],
     } == diff
