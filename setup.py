@@ -21,7 +21,7 @@ setup(
     author="Simon Willison",
     version=VERSION,
     license="Apache License, Version 2.0",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests"]),
     install_requires=["click", "dictdiffer"],
     setup_requires=["pytest-runner"],
     extras_require={"test": ["pytest"]},
