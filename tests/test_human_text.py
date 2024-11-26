@@ -137,6 +137,65 @@ def test_row_changed_and_row_added_and_row_deleted():
     )
 
 
+def test_with_item_nouns():
+    "Should have headers for each section here"
+    diff = compare(
+        load_csv(io.StringIO(ONE), key="id"), load_csv(io.StringIO(SIX), key="id")
+    )
+    assert (
+        dedent(
+            """
+    1 thing changed, 1 thing added, 1 thing removed
+
+    1 thing changed
+
+      id: 1
+        age: "4" => "5"
+
+    1 thing added
+
+      id: 3
+      name: Bailey
+      age: 1
+
+    1 thing removed
+
+      id: 2
+      name: Pancakes
+      age: 2
+    """
+        ).strip()
+        == human_text(diff, "id", "thing", "things")
+    )
+
+
+def test_with_plural_nouns():
+    diff = compare(
+        load_csv(io.StringIO(THREE), key="id"), load_csv(io.StringIO(FIVE), key="id")
+    )
+    assert (
+        dedent(
+            """
+    3 entities added
+
+      id: 2
+      name: Pancakes
+      age: 2
+
+      id: 3
+      name: Bailey
+      age: 1
+
+      id: 4
+      name: Carl
+      age: 7
+    """
+        ).strip()
+        == human_text(diff, "id", "entity", "entities")
+    )
+
+
+
 def test_columns_changed():
     diff = compare(
         load_csv(io.StringIO(SIX), key="id"), load_csv(io.StringIO(SEVEN), key="id")
