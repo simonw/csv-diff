@@ -3,6 +3,7 @@ from dictdiffer import diff
 import json
 import hashlib
 
+ROW_NUMBER = "row"
 
 def load_csv(fp, key=None, dialect=None):
     if dialect is None and fp.seekable():
@@ -17,13 +18,18 @@ def load_csv(fp, key=None, dialect=None):
     fp = csv.reader(fp, dialect=(dialect or "excel"))
     headings = next(fp)
     rows = [dict(zip(headings, line)) for line in fp]
-    if key:
-        keyfn = lambda r: r[key]
+    if key == ROW_NUMBER:
+        if key in headings:
+            keyfn = lambda i, r: r[key]  # @UnusedVariable
+        else:
+            keyfn = lambda i, r: i  # @UnusedVariable
+    elif key:
+        keyfn = lambda i, r: r[key]  # @UnusedVariable
     else:
-        keyfn = lambda r: hashlib.sha1(
+        keyfn = lambda i, r: hashlib.sha1(  # @UnusedVariable
             json.dumps(r, sort_keys=True).encode("utf8")
         ).hexdigest()
-    return {keyfn(r): r for r in rows}
+    return {keyfn(i, r): r for i, r in enumerate(rows)}
 
 
 def load_json(fp, key=None):
