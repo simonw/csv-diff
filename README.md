@@ -51,7 +51,7 @@ Consider two CSV files:
 
 The `--key=id` option means that the `id` column should be treated as the unique key, to identify which records have changed.
 
-The tool will automatically detect if your files are comma- or tab-separated. You can over-ride this automatic detection and force the tool to use a specific format using `--format=tsv` or `--format=csv`.
+The tool will automatically detect if your files are comma- or tab-separated. You can override this automatic detection and force the tool to use a specific format using `--format=tsv` or `--format=csv`.
 
 You can also feed it JSON files, provided they are a JSON array of objects where each object has the same keys. Use `--format=json` if your input files are JSON.
 
