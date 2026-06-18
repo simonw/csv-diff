@@ -16,6 +16,7 @@ def load_csv(fp, key=None, dialect=None):
             pass
     fp = csv.reader(fp, dialect=(dialect or "excel"))
     headings = next(fp)
+    _validate_unique_headings(headings)
     rows = [dict(zip(headings, line)) for line in fp]
     if key:
         keyfn = lambda r: r[key]
@@ -39,6 +40,29 @@ def load_json(fp, key=None):
             json.dumps(r, sort_keys=True).encode("utf8")
         ).hexdigest()
     return {keyfn(r): _simplify_json_row(r, common_keys) for r in raw_list}
+
+
+def _validate_unique_headings(headings):
+    """Raise ValueError if headings contain duplicates.
+
+    `dict(zip(headings, line))` silently keeps the last value when a heading
+    is repeated, so a CSV like ``a,b,a,b`` with rows ``1,2,3,4`` ends up as
+    ``{'a': '3', 'b': '4'}`` and the first two columns are dropped on the
+    floor. Issue #31.
+    """
+    seen = set()
+    duplicates = []
+    for h in headings:
+        if h in seen and h not in duplicates:
+            duplicates.append(h)
+        seen.add(h)
+    if duplicates:
+        raise ValueError(
+            "duplicate column name(s) in input: {}. "
+            "csv-diff cannot distinguish which value belongs to which column, "
+            "so duplicate headings are not allowed. Rename the columns in the "
+            "input file and re-run.".format(", ".join(repr(d) for d in duplicates))
+        )
 
 
 def _simplify_json_row(r, common_keys):

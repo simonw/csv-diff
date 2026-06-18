@@ -115,3 +115,19 @@ def test_tsv():
         "columns_added": [],
         "columns_removed": [],
     } == diff
+
+
+def test_load_csv_duplicate_headings_raises():
+    """load_csv must reject duplicate headings instead of silently dropping columns (issue #31)."""
+    import pytest
+    from csv_diff import load_csv as _load_csv
+
+    csv = "a,b,a,b\n1,2,3,4\n5,6,7,8"
+    with pytest.raises(ValueError) as excinfo:
+        _load_csv(io.StringIO(csv), key="a")
+    msg = str(excinfo.value)
+    # Both duplicate column names are reported, in order of first appearance
+    assert "'a'" in msg
+    assert "'b'" in msg
+    # And the message tells the user why
+    assert "duplicate" in msg
