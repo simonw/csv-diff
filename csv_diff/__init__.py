@@ -16,7 +16,12 @@ def load_csv(fp, key=None, dialect=None):
             pass
     fp = csv.reader(fp, dialect=(dialect or "excel"))
     headings = next(fp)
-    rows = [dict(zip(headings, line)) for line in fp]
+    # Skip blank rows so trailing newlines (or stray blank lines inside the
+    # file) don't get treated as data rows that are missing every column -
+    # that surfaced as an unhelpful KeyError on the key column. A row is
+    # "blank" if csv.reader returned no fields for it, which is what happens
+    # when the final record is just "\n" or a file ends with extra blank lines.
+    rows = [dict(zip(headings, line)) for line in fp if line]
     if key:
         keyfn = lambda r: r[key]
     else:
