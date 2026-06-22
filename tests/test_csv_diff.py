@@ -115,3 +115,22 @@ def test_tsv():
         "columns_added": [],
         "columns_removed": [],
     } == diff
+
+
+def test_long_field_does_not_exceed_csv_field_size_limit():
+    # https://github.com/simonw/csv-diff/issues/41 - the csv module's
+    # default field size limit is 131072 bytes, which is too small for
+    # real-world fields like nucleotide sequences. csv-diff raises the
+    # limit at import time so load_csv can handle long fields without
+    # crashing with `csv.Error: field larger than field limit`.
+    import csv as _csv
+    import csv_diff  # noqa: F401  - import side effect: raises the limit
+
+    big_value = "A" * (2 ** 17)  # 128 KiB, 4x the default limit
+    _csv.field_size_limit(2 ** 17)  # restore the lower bound for this test
+
+    csv_data = "id,name\n1,{}\n".format(big_value)
+    rows = load_csv(io.StringIO(csv_data), key="id")
+    assert len(rows) == 1
+    assert rows["1"]["name"] == big_value
+    assert len(rows["1"]["name"]) == len(big_value)

@@ -1,7 +1,16 @@
 import csv
+import ctypes
 from dictdiffer import diff
 import json
 import hashlib
+
+# csv's default field size limit is 131072 bytes, which is too small for
+# real-world use cases like nucleotide sequences, long log lines, or JSON
+# strings embedded in a CSV cell. Raise it to the platform max at import
+# time so load_csv / load_json don't crash with
+# `csv.Error: field larger than field limit` on otherwise-valid input.
+# See https://github.com/simonw/csv-diff/issues/41
+csv.field_size_limit(int(ctypes.c_ulong(-1).value // 2))
 
 
 def load_csv(fp, key=None, dialect=None):
