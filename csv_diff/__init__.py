@@ -15,7 +15,10 @@ def load_csv(fp, key=None, dialect=None):
             # Oh well, we tried. Fallback to the default.
             pass
     fp = csv.reader(fp, dialect=(dialect or "excel"))
-    headings = next(fp)
+    try:
+        headings = next(fp)
+    except StopIteration:
+        raise ValueError("CSV input is empty (no header row found)")
     rows = [dict(zip(headings, line)) for line in fp]
     if key:
         keyfn = lambda r: r[key]
@@ -149,7 +152,11 @@ def human_text(result, key=None, singular=None, plural=None, current=None, extra
             block.append("  {}: {}".format(key, details["key"]))
             for field, (prev_value, current_value) in details["changes"].items():
                 block.append(
-                    '    {}: "{}" => "{}"'.format(field, prev_value, current_value)
+                    "    {}: {} => {}".format(
+                        field,
+                        _format_quoted(prev_value),
+                        _format_quoted(current_value),
+                    )
                 )
             if extras:
                 current_item = current[details["key"]]
@@ -160,7 +167,7 @@ def human_text(result, key=None, singular=None, plural=None, current=None, extra
                 block = []
                 block.append("    Unchanged:")
                 for field, value in details["unchanged"].items():
-                    block.append('      {}: "{}"'.format(field, value))
+                    block.append("      {}: {}".format(field, _format_quoted(value)))
                 block.append("")
                 change_blocks.append("\n".join(block))
         summary.append("\n".join(change_blocks))
@@ -195,6 +202,19 @@ def human_text(result, key=None, singular=None, plural=None, current=None, extra
         summary.append("\n\n".join(rows))
         summary.append("")
     return (", ".join(title) + "\n\n" + ("\n".join(summary))).strip()
+
+
+def _format_quoted(value):
+    """Render value as a double-quoted string with internal quotes/backslashes escaped.
+
+    Values are rendered the same way for every path that prints them as
+    ``"..."``: a backslash escapes any backslash, then any double quote, so the
+    output is unambiguous even when the value itself contains those characters.
+    Non-string values are stringified first so the helper is safe to call with
+    integers, floats, ``None``, or anything else produced by ``compare``.
+    """
+    s = "" if value is None else str(value)
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
 def human_row(row, prefix=""):

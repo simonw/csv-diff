@@ -222,3 +222,44 @@ def test_no_key():
         ).strip()
         == human_text(diff)
     )
+
+
+def test_row_changed_escapes_inner_quotes_in_change_values():
+    # Regression: values containing double quotes used to render as
+    # name: "hello "world"" => "goodbye "cruel" world", where the
+    # internal quotes were indistinguishable from the wrapping quotes.
+    diff = compare(
+        load_csv(io.StringIO('id,name\na,"hello ""world"""\n'), key="id"),
+        load_csv(io.StringIO('id,name\na,"goodbye ""cruel"" world"\n'), key="id"),
+    )
+    expected = (
+        "1 row changed\n"
+        "\n"
+        "  id: a\n"
+        '    name: "hello \\"world\\"" => "goodbye \\"cruel\\" world"'
+    )
+    assert expected == human_text(diff, "id")
+
+
+
+def test_row_changed_escapes_inner_quotes_in_unchanged_values():
+    # Regression: unchanged rows with quote-containing values used to
+    # render as name: "has "quote"" which was ambiguous.
+    diff = compare(
+        load_csv(io.StringIO('id,tag,name\na,outer,"hello ""world"""\n'), key="id"),
+        load_csv(io.StringIO('id,tag,name\na,outer,"hello ""world"" v2"\n'), key="id"),
+        show_unchanged=True,
+    )
+    expected = (
+        "1 row changed\n"
+        "\n"
+        "  id: a\n"
+        '    name: "hello \\"world\\"" => "hello \\"world\\" v2"\n'
+        "\n"
+        "    Unchanged:\n"
+        '      tag: "outer"'
+    )
+    assert expected == human_text(diff, "id")
+
+
+
