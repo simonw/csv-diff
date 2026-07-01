@@ -15,15 +15,48 @@ def load_csv(fp, key=None, dialect=None):
             # Oh well, we tried. Fallback to the default.
             pass
     fp = csv.reader(fp, dialect=(dialect or "excel"))
-    headings = next(fp)
-    rows = [dict(zip(headings, line)) for line in fp]
+    try:
+        headings = next(fp)
+    except StopIteration:
+        raise ValueError("CSV input is empty (no header row found)")
+    if not headings:
+        raise ValueError("CSV input has an empty header row")
+    rows = {}
+    # Track the 1-based source line number alongside each row so that any
+    # downstream KeyError or value-shape error can point back to the line
+    # in the input file the user just gave us. The header is on line 1.
+    for line_number, line in enumerate(fp, start=2):
+        # csv.reader yields an empty list for a fully-blank line (a stray
+        # trailing newline, the kind GitHub and most editors insert by
+        # default). Silently skipping those matches the "POSIX text file"
+        # convention and the behaviour of most other CSV tools; raising
+        # KeyError('a') at the very end of a diff made the tool look
+        # broken on perfectly normal input. See issue #29.
+        if not line:
+            continue
+        if len(line) < len(headings):
+            raise ValueError(
+                f"CSV row on line {line_number} has {len(line)} field(s) "
+                f"but the header on line 1 has {len(headings)}; "
+                f"got {line!r}"
+            )
+        rows[line_number] = dict(zip(headings, line))
     if key:
-        keyfn = lambda r: r[key]
+        try:
+            return {rows[ln][key]: rows[ln] for ln in rows}
+        except KeyError as exc:
+            missing = exc.args[0]
+            raise ValueError(
+                f"Key column {missing!r} not present in CSV header "
+                f"{headings!r}"
+            ) from None
     else:
-        keyfn = lambda r: hashlib.sha1(
-            json.dumps(r, sort_keys=True).encode("utf8")
-        ).hexdigest()
-    return {keyfn(r): r for r in rows}
+        return {
+            hashlib.sha1(
+                json.dumps(rows[ln], sort_keys=True).encode("utf8")
+            ).hexdigest(): rows[ln]
+            for ln in rows
+        }
 
 
 def load_json(fp, key=None):
