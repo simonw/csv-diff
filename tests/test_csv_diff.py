@@ -115,3 +115,25 @@ def test_tsv():
         "columns_added": [],
         "columns_removed": [],
     } == diff
+
+
+def test_load_csv_handles_fields_larger_than_default_limit():
+    # Regression test for https://github.com/simonw/csv-diff/issues/41
+    # The csv module's default per-field size cap is 131072 bytes; rows with
+    # longer fields (e.g. nucleotide sequences, large JSON blobs) used to
+    # raise ``_csv.Error: field larger than field limit (131072)`` from
+    # ``load_csv``. ``load_csv`` now bumps the cap to ``sys.maxsize`` so
+    # these rows are returned in full.
+    long_value = "A" * (200_000)
+    csv_text = f"id,sequence\n1,{long_value}\n"
+    rows = load_csv(io.StringIO(csv_text), key="id")
+    assert rows == {"1": {"id": "1", "sequence": long_value}}
+
+
+def test_load_csv_handles_tsv_with_long_fields():
+    # Same fix as above, exercising the TSV path (which uses the same
+    # underlying csv reader and is also subject to the size cap).
+    long_value = "T" * (200_000)
+    tsv_text = f"id\tsequence\n1\t{long_value}\n"
+    rows = load_csv(io.StringIO(tsv_text), key="id")
+    assert rows == {"1": {"id": "1", "sequence": long_value}}

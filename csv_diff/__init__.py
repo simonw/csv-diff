@@ -1,10 +1,19 @@
 import csv
+import sys
 from dictdiffer import diff
 import json
 import hashlib
 
 
 def load_csv(fp, key=None, dialect=None):
+    # The C parser's per-field size cap defaults to 131072 bytes, which is
+    # far too small for CSVs that contain long strings (e.g. nucleotide
+    # sequences, large JSON blobs, embedded log lines). When the limit is
+    # exceeded the parser raises ``_csv.Error: field larger than field
+    # limit (131072)`` instead of returning the row. Bump the limit to
+    # the platform's ``PY_SSIZE_T_MAX`` so the parser can handle long
+    # fields. See issue #41.
+    csv.field_size_limit(sys.maxsize)
     if dialect is None and fp.seekable():
         # Peek at first 1MB to sniff the delimiter and other dialect details
         peek = fp.read(1024**2)
