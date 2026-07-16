@@ -115,3 +115,40 @@ def test_tsv():
         "columns_added": [],
         "columns_removed": [],
     } == diff
+
+
+def test_both_empty():
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "columns_added": [],
+        "columns_removed": [],
+    } == compare({}, {})
+
+
+def test_header_only_csv():
+    previous = load_csv(io.StringIO("id,name,age\n"), key="id")
+    current = load_csv(io.StringIO("id,name,age\n"), key="id")
+    assert previous == current == {}
+    assert {
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "columns_added": [],
+        "columns_removed": [],
+    } == compare(previous, current)
+
+
+def test_one_empty():
+    rows = load_csv(io.StringIO(THREE), key="id")
+
+    added = compare({}, rows)
+    assert added["added"] == [rows["1"]]
+    assert set(added["columns_added"]) == set(rows["1"])
+    assert added["removed"] == added["changed"] == added["columns_removed"] == []
+
+    removed = compare(rows, {})
+    assert removed["removed"] == [rows["1"]]
+    assert set(removed["columns_removed"]) == set(rows["1"])
+    assert removed["added"] == removed["changed"] == removed["columns_added"] == []
