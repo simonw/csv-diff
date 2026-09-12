@@ -36,7 +36,7 @@ def load_csv(fp, key=None, dialect=None):
     fp = csv.reader(fp, dialect=(dialect or "excel"))
     headings = next(fp)
     rows = [dict(zip(headings, line)) for line in fp]
-    if key:
+    if key is not None:
         _validate_unique_keys(rows, key)
         keyfn = lambda r: r[key]
     else:
@@ -52,7 +52,7 @@ def load_json(fp, key=None):
     common_keys = set()
     for item in raw_list:
         common_keys.update(item.keys())
-    if key:
+    if key is not None:
         _validate_unique_keys(raw_list, key)
         keyfn = lambda r: r[key]
     else:

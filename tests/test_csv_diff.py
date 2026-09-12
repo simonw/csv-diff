@@ -1,4 +1,4 @@
-from csv_diff import load_csv, load_json, compare
+from csv_diff import DuplicateKeyError, load_csv, load_json, compare
 import io
 import json
 import pytest
@@ -128,26 +128,33 @@ def test_tsv():
         ('a,b\n,"first\ncontinued"\n2,other\n,last', "", 3),
     ],
 )
-def test_load_csv_rejects_duplicate_explicit_keys(content, key_value, duplicate_row):
-    with pytest.raises(ValueError, match="Duplicate key") as error:
-        load_csv(io.StringIO(content), key="a")
+@pytest.mark.parametrize("key_name", ["a", ""])
+def test_load_csv_rejects_duplicate_explicit_keys(
+    content, key_value, duplicate_row, key_name
+):
+    content = content.replace("a,", key_name + ",", 1)
+    with pytest.raises(DuplicateKeyError, match="Duplicate key") as error:
+        load_csv(io.StringIO(content), key=key_name)
+    assert isinstance(error.value, ValueError)
     message = str(error.value)
     assert repr(key_value) in message
-    assert "column 'a'" in message
+    assert "column {!r}".format(key_name) in message
     assert "data row {}".format(duplicate_row) in message
     assert "first seen at data row 1" in message
 
 
 @pytest.mark.parametrize("key_value", ["1", 0, None])
-def test_load_json_rejects_duplicate_explicit_keys(key_value):
+@pytest.mark.parametrize("key_name", ["id", ""])
+def test_load_json_rejects_duplicate_explicit_keys(key_value, key_name):
     content = json.dumps(
-        [{"id": key_value, "name": "first"}, {"id": key_value, "name": "last"}]
+        [{key_name: key_value, "name": "first"}, {key_name: key_value, "name": "last"}]
     )
-    with pytest.raises(ValueError, match="Duplicate key") as error:
-        load_json(io.StringIO(content), key="id")
+    with pytest.raises(DuplicateKeyError, match="Duplicate key") as error:
+        load_json(io.StringIO(content), key=key_name)
+    assert isinstance(error.value, ValueError)
     message = str(error.value)
     assert repr(key_value) in message
-    assert "column 'id'" in message
+    assert "column {!r}".format(key_name) in message
     assert "data row 2" in message
     assert "first seen at data row 1" in message
 
@@ -163,6 +170,23 @@ def test_load_json_rejects_duplicate_explicit_keys(key_value):
         ),
     ],
 )
-def test_load_without_key_still_deduplicates_identical_rows(loader, content, expected):
-    rows = loader(io.StringIO(content))
+@pytest.mark.parametrize("kwargs", [{}, {"key": None}])
+def test_load_without_key_still_deduplicates_identical_rows(
+    loader, content, expected, kwargs
+):
+    rows = loader(io.StringIO(content), **kwargs)
     assert list(rows.values()) == [expected]
+
+
+@pytest.mark.parametrize(
+    "loader, content",
+    [
+        (load_csv, ",name\n1,first\n2,last"),
+        (load_json, '[{"": "1", "name": "first"}, {"": "2", "name": "last"}]'),
+    ],
+)
+def test_load_unique_empty_name_key(loader, content):
+    assert loader(io.StringIO(content), key="") == {
+        "1": {"": "1", "name": "first"},
+        "2": {"": "2", "name": "last"},
+    }
