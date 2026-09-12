@@ -35,6 +35,11 @@ def load_json(fp, key=None):
     if key:
         keyfn = lambda r: r[key]
     else:
+        # Missing fields and explicit nulls should produce the same row key.
+        # Keep nested values intact until after hashing.
+        for row in raw_list:
+            for field in common_keys:
+                row.setdefault(field, None)
         keyfn = lambda r: hashlib.sha1(
             json.dumps(r, sort_keys=True).encode("utf8")
         ).hexdigest()
