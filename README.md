@@ -51,6 +51,8 @@ Consider two CSV files:
 
 The `--key=id` option means that the `id` column should be treated as the unique key, to identify which records have changed.
 
+When `--key` is specified, duplicate key values within either input are rejected, even if the rows are identical. The error identifies the input file, key column and value, and the first and repeated data row numbers (counting from 1, excluding a CSV/TSV header). These are record numbers, not physical line numbers; a quoted CSV value may span multiple lines. This applies to CSV, TSV and JSON inputs. The Python loaders raise `csv_diff.DuplicateKeyError`, a subclass of `ValueError`. Without `--key`, identical rows continue to be deduplicated by their contents.
+
 The tool will automatically detect if your files are comma- or tab-separated. You can over-ride this automatic detection and force the tool to use a specific format using `--format=tsv` or `--format=csv`.
 
 You can also feed it JSON files, provided they are a JSON array of objects where each object has the same keys. Use `--format=json` if your input files are JSON.

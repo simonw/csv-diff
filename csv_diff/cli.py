@@ -1,6 +1,6 @@
 import click
 import json as std_json
-from . import load_csv, load_json, compare, human_text
+from . import load_csv, load_json, compare, human_text, DuplicateKeyError
 
 
 @click.command()
@@ -63,12 +63,15 @@ def cli(previous, current, key, format, json, singular, plural, show_unchanged, 
         )
 
     def load(filename):
-        if format == "json":
-            return load_json(open(filename), key=key)
-        else:
-            return load_csv(
-                open(filename, newline=""), key=key, dialect=dialect.get(format)
-            )
+        try:
+            if format == "json":
+                return load_json(open(filename), key=key)
+            else:
+                return load_csv(
+                    open(filename, newline=""), key=key, dialect=dialect.get(format)
+                )
+        except DuplicateKeyError as error:
+            raise click.ClickException("{}: {}".format(filename, error)) from error
 
     previous_data = load(previous)
     current_data = load(current)

@@ -300,3 +300,35 @@ def test_diff_with_extras(tmpdir):
     """
     ).strip()
     assert result.output.strip() == expected
+
+
+@pytest.mark.parametrize("format", ["csv", "tsv", "json"])
+@pytest.mark.parametrize("duplicate_in", ["previous", "current"])
+def test_cli_reports_duplicate_key_with_input_filename(tmpdir, format, duplicate_in):
+    paths = []
+    for side in ("previous", "current"):
+        path = tmpdir / "{}.{}".format(side, format)
+        if format == "json":
+            rows = [{"id": 1, "name": "first"}]
+            if side == duplicate_in:
+                rows.append({"id": 1, "name": "last"})
+            content = json.dumps(rows)
+        else:
+            delimiter = "\t" if format == "tsv" else ","
+            content = "id{0}name\n1{0}first\n".format(delimiter)
+            if side == duplicate_in:
+                content += "1{}last\n".format(delimiter)
+        path.write(content)
+        paths.append(str(path))
+    result = CliRunner().invoke(
+        cli.cli,
+        paths + ["--key", "id", "--format", format, "--json"],
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 1
+    assert result.output.startswith("Error:")
+    assert "{}.{}".format(duplicate_in, format) in result.output
+    assert "Duplicate key" in result.output
+    assert "column 'id'" in result.output
+    assert "data row 2" in result.output
+    assert "first seen at data row 1" in result.output
