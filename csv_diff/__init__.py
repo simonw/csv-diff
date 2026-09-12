@@ -4,6 +4,25 @@ import json
 import hashlib
 
 
+class DuplicateKeyError(ValueError):
+    """An explicitly selected row key occurs more than once in an input."""
+
+
+def _validate_unique_keys(rows, key):
+    """Reject repeated explicit keys, reporting one-based data row numbers."""
+    seen = {}
+    for row_number, row in enumerate(rows, 1):
+        value = row[key]
+        if value in seen:
+            raise DuplicateKeyError(
+                "Duplicate key {!r} in column {!r} at data row {} "
+                "(first seen at data row {}).".format(
+                    value, key, row_number, seen[value]
+                )
+            )
+        seen[value] = row_number
+
+
 def load_csv(fp, key=None, dialect=None):
     if dialect is None and fp.seekable():
         # Peek at first 1MB to sniff the delimiter and other dialect details
@@ -17,7 +36,8 @@ def load_csv(fp, key=None, dialect=None):
     fp = csv.reader(fp, dialect=(dialect or "excel"))
     headings = next(fp)
     rows = [dict(zip(headings, line)) for line in fp]
-    if key:
+    if key is not None:
+        _validate_unique_keys(rows, key)
         keyfn = lambda r: r[key]
     else:
         keyfn = lambda r: hashlib.sha1(
@@ -32,7 +52,8 @@ def load_json(fp, key=None):
     common_keys = set()
     for item in raw_list:
         common_keys.update(item.keys())
-    if key:
+    if key is not None:
+        _validate_unique_keys(raw_list, key)
         keyfn = lambda r: r[key]
     else:
         keyfn = lambda r: hashlib.sha1(
