@@ -19,7 +19,7 @@ from . import load_csv, load_json, compare, human_text
 @click.option(
     "--format",
     type=click.Choice(["csv", "tsv", "json"]),
-    default=None,
+    default=None,   
     help="Explicitly specify input format (csv, tsv, json) instead of auto-detecting",
 )
 @click.option(
@@ -66,9 +66,12 @@ def cli(previous, current, key, format, json, singular, plural, show_unchanged, 
         if format == "json":
             return load_json(open(filename), key=key)
         else:
-            return load_csv(
-                open(filename, newline=""), key=key, dialect=dialect.get(format)
-            )
+            try:
+                return load_csv(
+                    open(filename, newline=""), key=key, dialect=dialect.get(format)
+                )
+            except ValueError as e:
+                raise click.ClickException(f"{filename}: {e}")                
 
     previous_data = load(previous)
     current_data = load(current)

@@ -16,7 +16,14 @@ def load_csv(fp, key=None, dialect=None):
             pass
     fp = csv.reader(fp, dialect=(dialect or "excel"))
     headings = next(fp)
-    rows = [dict(zip(headings, line)) for line in fp]
+    rows = []
+    for line in fp:
+        if not line:    
+            continue
+    # A row with fewer fields than the header would be silently mis-aligned by zip(); fail clearly instead (#30)
+        if len(line) < len(headings):
+            raise ValueError(f"Line {fp.line_num}: expected {len(headings)} fields but found {len(line)}")
+        rows.append(dict(zip(headings, line)))  
     if key:
         keyfn = lambda r: r[key]
     else:
