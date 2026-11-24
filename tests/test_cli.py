@@ -300,3 +300,14 @@ def test_diff_with_extras(tmpdir):
     """
     ).strip()
     assert result.output.strip() == expected
+
+
+def test_cli_row_with_missing_field_shows_clean_error(tmpdir):
+    one = tmpdir / "one.csv"
+    one.write("id,name,age\n1,Cleo,4\n2,Pancakes\n")
+    two = tmpdir / "two.csv"
+    two.write("id,name,age\n1,Cleo,4\n2,Pancakes,2\n")
+    result = CliRunner().invoke(cli.cli, [str(one), str(two), "--key", "id"])
+    assert result.exit_code == 1
+    assert "expected 3 fields but found 2" in result.output
+    assert "Traceback" not in result.output

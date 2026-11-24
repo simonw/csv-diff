@@ -115,3 +115,38 @@ def test_tsv():
         "columns_added": [],
         "columns_removed": [],
     } == diff
+
+
+import io
+import pytest
+
+
+def test_load_csv_row_with_missing_field_raises_clear_error():
+    data = "id,name,age\n1,Cleo,4\n2,Pancakes\n"
+    with pytest.raises(ValueError) as excinfo:
+        load_csv(io.StringIO(data), key="id")
+    assert "Line 3: expected 3 fields but found 2" in str(excinfo.value)
+
+
+def test_load_csv_empty_field_is_allowed():
+    data = "id,name,age\n1,Cleo,\n2,Pancakes,2\n"
+    rows = load_csv(io.StringIO(data), key="id")
+    assert rows["1"] == {"id": "1", "name": "Cleo", "age": ""}
+
+
+def test_load_csv_quoted_comma_counts_as_one_field():
+    data = 'id,name,age\n1,"Cleo, the cat",4\n2,Pancakes,2\n'
+    rows = load_csv(io.StringIO(data), key="id")
+    assert rows["1"]["name"] == "Cleo, the cat"
+
+
+def test_load_csv_blank_line_is_skipped():
+    data = "id,name,age\n1,Cleo,4\n\n2,Pancakes,2\n"
+    rows = load_csv(io.StringIO(data), key="id")
+    assert set(rows) == {"1", "2"}
+
+
+def test_load_csv_extra_fields_keep_existing_behaviour():
+    data = "id,name,age\n1,Cleo,4,extra\n2,Pancakes,2\n"
+    rows = load_csv(io.StringIO(data), key="id")
+    assert rows["1"] == {"id": "1", "name": "Cleo", "age": "4"}
